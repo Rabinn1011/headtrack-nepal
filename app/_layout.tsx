@@ -8,7 +8,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { initI18n } from '../src/i18n';
 import { initDatabase, DB_FILE_NAME } from '../src/db/client';
 import { getParticipant, logEvent } from '../src/db/repository';
-import { isPinSet } from '../src/security/pin';
 import { verifyDatabaseEncrypted } from '../src/security/dbCheck';
 import { attachReminderListeners } from '../src/notifications/reminders';
 import { AppProvider } from '../src/state/AppContext';
@@ -19,7 +18,6 @@ void SplashScreen.preventAutoHideAsync();
 
 type Boot = {
   participant: Participant | null;
-  pinSet: boolean;
   encryptionOk: boolean | null;
 };
 
@@ -40,9 +38,8 @@ export default function RootLayout() {
     (async () => {
       await initI18n();
       await initDatabase();
-      const [participant, pinSet, encryptionOk] = await Promise.all([
+      const [participant, encryptionOk] = await Promise.all([
         getParticipant(),
-        isPinSet(),
         verifyDatabaseEncrypted(DB_FILE_NAME),
       ]);
       await logEvent('app_open');
@@ -52,7 +49,7 @@ export default function RootLayout() {
         await logEvent('encryption_check_failed');
       }
       detachListeners.current = attachReminderListeners();
-      if (!cancelled) setBoot({ participant, pinSet, encryptionOk });
+      if (!cancelled) setBoot({ participant, encryptionOk });
     })();
     return () => {
       cancelled = true;
@@ -75,14 +72,12 @@ export default function RootLayout() {
   return (
     <AppProvider
       initialParticipant={boot.participant}
-      initialLocked={boot.pinSet}
       initialEncryptionOk={boot.encryptionOk}
     >
       <StatusBar style="dark" backgroundColor={C.bg} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
-        <Stack.Screen name="pin" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="phq9" options={{ presentation: 'modal' }} />
       </Stack>

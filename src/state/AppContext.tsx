@@ -6,10 +6,6 @@ import { getParticipant } from '../db/repository';
 type AppState = {
   participant: Participant | null;
   refreshParticipant: () => Promise<void>;
-  /** true until the participant PIN has been entered this session */
-  locked: boolean;
-  unlock: () => void;
-  lock: () => void;
   /** null = unknown/no file yet; false = plaintext DB detected (Expo Go or misconfig) */
   encryptionOk: boolean | null;
   setEncryptionOk: (v: boolean | null) => void;
@@ -20,16 +16,13 @@ const Ctx = createContext<AppState | null>(null);
 export function AppProvider({
   children,
   initialParticipant,
-  initialLocked,
   initialEncryptionOk,
 }: {
   children: React.ReactNode;
   initialParticipant: Participant | null;
-  initialLocked: boolean;
   initialEncryptionOk: boolean | null;
 }) {
   const [participant, setParticipant] = useState<Participant | null>(initialParticipant);
-  const [locked, setLocked] = useState(initialLocked);
   const [encryptionOk, setEncryptionOk] = useState<boolean | null>(initialEncryptionOk);
 
   const refreshParticipant = useCallback(async () => {
@@ -40,13 +33,10 @@ export function AppProvider({
     () => ({
       participant,
       refreshParticipant,
-      locked,
-      unlock: () => setLocked(false),
-      lock: () => setLocked(true),
       encryptionOk,
       setEncryptionOk,
     }),
-    [participant, locked, encryptionOk, refreshParticipant],
+    [participant, encryptionOk, refreshParticipant],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

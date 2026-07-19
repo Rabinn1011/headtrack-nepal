@@ -30,7 +30,7 @@ export async function getOrCreateDbKeyHex(): Promise<string> {
   return hex;
 }
 
-/** Random hex string helper (used for PIN salt and export salts/IVs). */
+/** Random hex string helper (used for export salts/IVs). */
 export async function randomHex(nBytes: number): Promise<string> {
   return bytesToHex(await Crypto.getRandomBytesAsync(nBytes));
 }

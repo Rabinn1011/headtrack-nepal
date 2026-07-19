@@ -31,6 +31,5 @@ low/mid-range Android devices** (proposal Section 10).
    delivery; open from the notification and verify a `reminder_opened`
    app_event row. Repeat with battery optimisation enabled to document OEM
    behaviour (Xiaomi/Samsung/Oppo/Vivo).
-7. **PIN gate.** Kill and reopen → PIN required; wrong PIN rejected.
-8. **PHQ-9 safety.** Enter item 9 > 0 → the clinician-contact prompt must
+7. **PHQ-9 safety.** Enter item 9 > 0 → the clinician-contact prompt must
    appear immediately and be dismissible only via acknowledgement.

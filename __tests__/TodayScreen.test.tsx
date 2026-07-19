@@ -69,7 +69,7 @@ beforeAll(async () => {
 
 function renderToday() {
   return render(
-    <AppProvider initialParticipant={participant} initialLocked={false} initialEncryptionOk={true}>
+    <AppProvider initialParticipant={participant} initialEncryptionOk={true}>
       <TodayScreen />
     </AppProvider>,
   );

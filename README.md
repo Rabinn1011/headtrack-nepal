@@ -16,12 +16,12 @@ explicitly blocked in `app.json`.
 
 ```
 app/                 expo-router screens (Today check-in, Summary, Diary, Settings,
-                     onboarding, PIN gate, PHQ-9 modal)
-src/components/      shared UI (QuestionCard, ChoicePill, SeveritySlider, PinPad, chart…)
+                     onboarding, PHQ-9 modal)
+src/components/      shared UI (QuestionCard, ChoicePill, SeveritySlider, chart…)
 src/db/              drizzle schema, migration runner, typed repository (only data surface)
 src/i18n/            ne.json / en.json — every user-facing string lives here
 src/rules/           declarative rule engine + PHQ-9 item-9 safety check + tests
-src/security/        SQLCipher key management, PIN hashing, encryption self-check
+src/security/        SQLCipher key management, encryption self-check
 src/export/          clinician PDF, de-identified passphrase-encrypted CSV bundle
 src/notifications/   daily local reminder + adherence events
 tools/decrypt-export.js   offline decryptor for research exports (Node, no deps)
@@ -89,6 +89,13 @@ engineering work:
    the agreed safety-pathway contact (person/number) before deployment.
 5. **Device round.** Run `e2e/README.md` on an emulator + ≥2 physical devices,
    including the pull-the-DB-file encryption verification and airplane-mode pass.
+6. **No participant PIN (deliberate deviation).** The app opens straight into
+   the diary — the PIN gate was removed at the PI's request to keep daily use
+   as low-burden as possible. The protocol lists the PIN as optional
+   ("Authentication: simple participant PIN if feasible", Appendix 2), and
+   encryption at rest via SQLCipher is unchanged, so data on a lost phone is
+   still protected by the OS keystore. If the ethics submission described the
+   PIN as an active safeguard, update that wording to match.
 
 ## Adherence events
 

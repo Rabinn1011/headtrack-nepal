@@ -3,8 +3,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 /**
  * Schema mirrors Appendix 1 of the protocol / Section 5 of the technical
  * proposal. All tables key off the locally generated participant_id (the
- * study ID) — never a name. The PIN hash is kept in the OS secure store,
- * NOT in this database.
+ * study ID) — never a name.
  */
 
 export const participants = sqliteTable('participants', {

@@ -14,10 +14,8 @@ import {
   Screen,
   SecondaryButton,
 } from '../src/components/ui';
-import { PinPad } from '../src/components/PinPad';
 import { setLanguage, type AppLanguage } from '../src/i18n';
 import { enrolParticipant, logEvent } from '../src/db/repository';
-import { setPin } from '../src/security/pin';
 import {
   ensureNotificationSetup,
   scheduleDailyReminder,
@@ -25,13 +23,13 @@ import {
 import { useApp } from '../src/state/AppContext';
 import { C, spacing } from '../src/theme/tokens';
 
-type Step = 'language' | 'enrol' | 'pin' | 'reminder' | 'battery' | 'done';
-const ORDER: Step[] = ['language', 'enrol', 'pin', 'reminder', 'battery', 'done'];
+type Step = 'language' | 'enrol' | 'reminder' | 'battery' | 'done';
+const ORDER: Step[] = ['language', 'enrol', 'reminder', 'battery', 'done'];
 
 export default function Onboarding() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { refreshParticipant, unlock } = useApp();
+  const { refreshParticipant } = useApp();
 
   const [step, setStep] = useState<Step>('language');
 
@@ -42,12 +40,6 @@ export default function Onboarding() {
   const [historyMonths, setHistoryMonths] = useState('');
   const [smartphoneExp, setSmartphoneExp] = useState<number | null>(null);
   const [enrolError, setEnrolError] = useState(false);
-
-  // PIN
-  const [pin1, setPin1] = useState('');
-  const [pin2, setPin2] = useState('');
-  const [confirming, setConfirming] = useState(false);
-  const [pinError, setPinError] = useState(false);
 
   // reminder
   const [reminderTime, setReminderTime] = useState(new Date(2000, 0, 1, 20, 0));
@@ -80,24 +72,6 @@ export default function Onboarding() {
     });
     await refreshParticipant();
     await logEvent('enrolled');
-    next();
-  };
-
-  const submitPin = async () => {
-    if (!confirming) {
-      if (pin1.length === 4) setConfirming(true);
-      return;
-    }
-    if (pin2.length !== 4) return;
-    if (pin1 !== pin2) {
-      setPinError(true);
-      setPin1('');
-      setPin2('');
-      setConfirming(false);
-      return;
-    }
-    await setPin(pin1);
-    unlock(); // freshly set — no need to ask again this session
     next();
   };
 
@@ -172,34 +146,6 @@ export default function Onboarding() {
             <PillGroup options={expOptions} value={smartphoneExp} onChange={setSmartphoneExp} />
           </QuestionCard>
           <PrimaryButton label={t('common.continue')} onPress={() => void finishEnrol()} />
-        </View>
-      )}
-
-      {step === 'pin' && (
-        <View style={{ gap: spacing.lg }}>
-          <AppText weight="bold" size="xl">
-            {t('onboarding.pinTitle')}
-          </AppText>
-          <AppText color={C.textSub}>
-            {confirming ? t('onboarding.pinConfirm') : t('onboarding.pinBody')}
-          </AppText>
-          {pinError ? (
-            <AppText size="sm" color={C.danger}>
-              {t('onboarding.pinMismatch')}
-            </AppText>
-          ) : null}
-          <PinPad
-            value={confirming ? pin2 : pin1}
-            onChange={(v) => {
-              setPinError(false);
-              confirming ? setPin2(v) : setPin1(v);
-            }}
-          />
-          <PrimaryButton
-            label={t('common.continue')}
-            disabled={(confirming ? pin2 : pin1).length !== 4}
-            onPress={() => void submitPin()}
-          />
         </View>
       )}
 

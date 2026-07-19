@@ -153,10 +153,6 @@
     "historyMonths": "How long have you had recurrent headaches? (months)",
     "smartphoneExp": "Smartphone experience",
     "smartphoneExpOptions": ["New to smartphones", "Some experience", "Use one daily"],
-    "pinTitle": "Set your 4-digit PIN",
-    "pinBody": "The PIN protects your diary if the phone is shared or lost.",
-    "pinConfirm": "Enter the PIN again",
-    "pinMismatch": "PINs did not match. Try again.",
     "reminderTitle": "Daily reminder",
     "reminderBody": "Choose a time for your daily check-in reminder. You can change it later in Settings.",
     "batteryTitle": "One more step for reliable reminders",
@@ -164,11 +160,6 @@
     "finishBody": "Log your first entry from the Today tab. Thank you for taking part in the study.",
     "start": "Start using the app",
     "errRequired": "Please fill this field"
-  },
-  "pin": {
-    "enterTitle": "Enter your PIN",
-    "wrong": "Wrong PIN. Try again.",
-    "unlock": "Unlock"
   },
   "reminder": {
     "notificationBody": "How was your day? Log today's entry — it takes less than a minute."
