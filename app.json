@@ -14,7 +14,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#F6F8FA"
       },
-      "blockedPermissions": ["android.permission.INTERNET"]
+      "blockedPermissions": [
+        "android.permission.INTERNET"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -44,6 +46,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e5c1a151-7ceb-41b8-8882-066cd47599c1"
+      }
+    },
+    "owner": "robinn"
   }
 }
