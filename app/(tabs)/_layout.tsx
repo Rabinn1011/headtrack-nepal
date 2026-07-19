@@ -1,43 +1,51 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { BookOpenText, ChartColumn, CircleCheck, Settings } from 'lucide-react-native';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { C } from '../../src/theme/tokens';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function TabsLayout() {
+  const { t, i18n } = useTranslation();
+  const labelFamily =
+    i18n.language === 'ne' ? 'NotoSansDevanagari-Medium' : 'NotoSans-Medium';
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarActiveTintColor: C.primaryDark,
+        tabBarInactiveTintColor: C.textFaint,
+        tabBarStyle: { backgroundColor: C.surface, borderTopColor: C.border },
+        tabBarLabelStyle: { fontFamily: labelFamily, fontSize: 11 },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: t('tabs.today'),
+          tabBarIcon: ({ color, size }) => <CircleCheck color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="summary"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: t('tabs.summary'),
+          tabBarIcon: ({ color, size }) => <ChartColumn color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: t('tabs.diary'),
+          tabBarIcon: ({ color, size }) => <BookOpenText color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: t('tabs.settings'),
+          tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
         }}
       />
     </Tabs>

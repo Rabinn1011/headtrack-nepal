@@ -1,39 +1,91 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { initI18n } from '../src/i18n';
+import { initDatabase, DB_FILE_NAME } from '../src/db/client';
+import { getParticipant, logEvent } from '../src/db/repository';
+import { isPinSet } from '../src/security/pin';
+import { verifyDatabaseEncrypted } from '../src/security/dbCheck';
+import { attachReminderListeners } from '../src/notifications/reminders';
+import { AppProvider } from '../src/state/AppContext';
+import type { Participant } from '../src/db/schema';
+import { C } from '../src/theme/tokens';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync();
+
+type Boot = {
+  participant: Participant | null;
+  pinSet: boolean;
+  encryptionOk: boolean | null;
+};
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  const [fontsLoaded] = useFonts({
+    'NotoSans-Regular': require('../assets/fonts/NotoSans-Regular.ttf'),
+    'NotoSans-Medium': require('../assets/fonts/NotoSans-Medium.ttf'),
+    'NotoSans-Bold': require('../assets/fonts/NotoSans-Bold.ttf'),
+    'NotoSansDevanagari-Regular': require('../assets/fonts/NotoSansDevanagari-Regular.ttf'),
+    'NotoSansDevanagari-Medium': require('../assets/fonts/NotoSansDevanagari-Medium.ttf'),
+    'NotoSansDevanagari-Bold': require('../assets/fonts/NotoSansDevanagari-Bold.ttf'),
   });
+  const [boot, setBoot] = useState<Boot | null>(null);
+  const detachListeners = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    let cancelled = false;
+    (async () => {
+      await initI18n();
+      await initDatabase();
+      const [participant, pinSet, encryptionOk] = await Promise.all([
+        getParticipant(),
+        isPinSet(),
+        verifyDatabaseEncrypted(DB_FILE_NAME),
+      ]);
+      await logEvent('app_open');
+      if (encryptionOk === false) {
+        // Plaintext DB header found — SQLCipher inactive (expected only in
+        // Expo Go). Logged so the pilot's technical-reliability review sees it.
+        await logEvent('encryption_check_failed');
+      }
+      detachListeners.current = attachReminderListeners();
+      if (!cancelled) setBoot({ participant, pinSet, encryptionOk });
+    })();
+    return () => {
+      cancelled = true;
+      detachListeners.current?.();
+    };
+  }, []);
 
-  if (!loaded) {
-    return null;
+  useEffect(() => {
+    if (fontsLoaded && boot) void SplashScreen.hideAsync();
+  }, [fontsLoaded, boot]);
+
+  if (!fontsLoaded || !boot) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.bg }}>
+        <ActivityIndicator color={C.primary} size="large" />
+      </View>
+    );
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+    <AppProvider
+      initialParticipant={boot.participant}
+      initialLocked={boot.pinSet}
+      initialEncryptionOk={boot.encryptionOk}
+    >
+      <StatusBar style="dark" backgroundColor={C.bg} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg } }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="pin" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="phq9" options={{ presentation: 'modal' }} />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </AppProvider>
   );
 }
